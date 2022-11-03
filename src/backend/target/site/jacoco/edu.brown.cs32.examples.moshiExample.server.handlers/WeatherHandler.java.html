@@ -1,0 +1,118 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>WeatherHandler.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">moshi</a> &gt; <a href="index.source.html" class="el_package">edu.brown.cs32.examples.moshiExample.server.handlers</a> &gt; <span class="el_source">WeatherHandler.java</span></div><h1>WeatherHandler.java</h1><pre class="source lang-java linenums">package edu.brown.cs32.examples.moshiExample.server.handlers;
+
+import com.squareup.moshi.JsonAdapter;
+import com.squareup.moshi.Moshi;
+import edu.brown.cs32.examples.moshiExample.weather.ForecastData;
+import edu.brown.cs32.examples.moshiExample.weather.Grid;
+import java.io.IOException;
+import java.net.URISyntaxException;
+import java.net.http.HttpResponse;
+import java.util.LinkedHashMap;
+import java.util.Map;
+import spark.QueryParamsMap;
+import spark.Request;
+import spark.Response;
+
+/**
+ * Handler class for the current weather API endpoint.
+ *
+ * &lt;p&gt;This endpoint takes a basic GET request with no Json body and two query parameters: lat and
+ * lon. They denote the latitude and longitude of the location upon which to retrieve the weather
+ * of. A request using these parameters is then sent to the NWS API to retrieve the current
+ * temperature. The endpoint returns a Json object in reply denoting if the request was successful,
+ * and if it was, the current temperature at the specified coordinates.
+ */
+<span class="fc" id="L25">public class WeatherHandler implements DataHandler {</span>
+
+  /**
+   * Handles the weather request.
+   *
+   * @param request the request to handle
+   * @param response use to modify properties of the response
+   * @return the current temperature if a request is successful, an error status if not.
+   */
+  @Override
+  public Object handle(Request request, Response response) {
+<span class="fc" id="L36">    QueryParamsMap queryMap = request.queryMap();</span>
+<span class="fc" id="L37">    return this.handleData(queryMap);</span>
+  }
+
+  /**
+   * Retrieve the temperature at the provided latitude and longitude coordinates. Calls upon two
+   * helper methods to establish connections with the NWS API and navigate to the necessary endpoint
+   * which contains the current temperature.
+   * @param queryMap - the hashmap containing the query parameters and their inputs;
+   * @return the current temperature if a request is successful, an error status if not.
+   */
+  public String handleData(QueryParamsMap queryMap) {
+    try {
+<span class="pc bpc" id="L49" title="1 of 4 branches missed.">      if ((!(queryMap.hasKey(&quot;lon&quot;))) || (!(queryMap.hasKey(&quot;lat&quot;)))) {</span>
+<span class="fc" id="L50">        Map&lt;String, Object&gt; results = new LinkedHashMap&lt;&gt;();</span>
+<span class="fc" id="L51">        results.put(&quot;result&quot;, &quot;error_bad_request&quot;);</span>
+<span class="fc" id="L52">        return new ResponseUtilities().serialize(results);</span>
+      } else {
+<span class="fc" id="L54">        String latitude = queryMap.get(&quot;lat&quot;).value();</span>
+<span class="fc" id="L55">        String longitude = queryMap.get(&quot;lon&quot;).value();</span>
+<span class="fc" id="L56">        String forecastURL = this.retrieveGridURL(latitude, longitude);</span>
+<span class="fc" id="L57">        String forecast = this.retrieveForecast(forecastURL);</span>
+<span class="fc" id="L58">        Map&lt;String, Object&gt; results = new LinkedHashMap&lt;&gt;();</span>
+<span class="fc" id="L59">        results.put(&quot;result&quot;, &quot;success&quot;);</span>
+<span class="fc" id="L60">        results.put(&quot;temperature&quot;, forecast);</span>
+<span class="fc" id="L61">        return new ResponseUtilities().serialize(results);</span>
+      }
+<span class="fc" id="L63">    } catch (Exception e) {</span>
+<span class="fc" id="L64">      Map&lt;String, Object&gt; results = new LinkedHashMap&lt;&gt;();</span>
+<span class="fc" id="L65">      results.put(&quot;result&quot;, &quot;error_datasource&quot;);</span>
+<span class="fc" id="L66">      return new ResponseUtilities().serialize(results);</span>
+    }
+  }
+
+  /**
+   * Establishes the initial connection with the NWS API using the 'points' endpoint. This endpoint
+   * then has its body contents deserialized using Moshi and the Grid class to obtain the NWS API's
+   * grid endpoint that contains the forecast data at the inputted latitude and longitude
+   * coordinates.
+   *
+   * @param latitude the latitude coordinate
+   * @param longitude the longitude coordinate
+   * @return the URL corresponding to the NWS API's endpoint that contains the necessary forecast
+   *     data
+   * @throws IOException when a connection is unable to be established with the NWS API client
+   * @throws InterruptedException when the connection to the NWS API is interrupted
+   * @throws URISyntaxException when the GET request to the NWS API is ill-formatted
+   */
+  public String retrieveGridURL(String latitude, String longitude)
+      throws IOException, InterruptedException, URISyntaxException {
+<span class="fc" id="L86">    String weatherURL = &quot;https://api.weather.gov/points/&quot; + latitude + &quot;,&quot; + longitude;</span>
+<span class="fc" id="L87">    HttpResponse&lt;String&gt; gridEndPoint = APIUtilities.getURLResponse(weatherURL);</span>
+<span class="fc" id="L88">    String gridJsonText = gridEndPoint.body();</span>
+<span class="fc" id="L89">    Moshi moshi = new Moshi.Builder().build();</span>
+<span class="fc" id="L90">    JsonAdapter&lt;Grid&gt; gridAdapter = moshi.adapter(Grid.class);</span>
+<span class="fc" id="L91">    Grid propertiesData = gridAdapter.fromJson(gridJsonText);</span>
+<span class="fc" id="L92">    String forecastURL = propertiesData.properties.forecast;</span>
+<span class="fc" id="L93">    return forecastURL;</span>
+  }
+
+  /**
+   * Establishes the secondary connection with the NWS API using the 'gridpoints' endpoint. This
+   * endpoint then has its body contents deserialized using Moshi and the ForecastData class to
+   * obtain the current temperature at that specified grid.
+   *
+   * @param forecastURL the URL address to establish a connection to
+   * @return the current temperature as a string
+   * @throws IOException when a connection is unable to be established with the NWS API client
+   * @throws InterruptedException when the connection to the NWS API is interrupted
+   * @throws URISyntaxException when the GET request to the NWS API is ill-formatted
+   */
+  public String retrieveForecast(String forecastURL)
+      throws IOException, InterruptedException, URISyntaxException {
+<span class="fc" id="L109">    HttpResponse&lt;String&gt; forecastEndPoint = APIUtilities.getURLResponse(forecastURL);</span>
+<span class="fc" id="L110">    String forecastJsonText = forecastEndPoint.body();</span>
+<span class="fc" id="L111">    Moshi forecastMoshi = new Moshi.Builder().build();</span>
+<span class="fc" id="L112">    JsonAdapter&lt;ForecastData&gt; forecastAdapter = forecastMoshi.adapter(ForecastData.class);</span>
+<span class="fc" id="L113">    ForecastData forecastData = forecastAdapter.fromJson(forecastJsonText);</span>
+<span class="fc" id="L114">    Number todayTemp = forecastData.properties.periods.get(0).temperature;</span>
+<span class="fc" id="L115">    return todayTemp.toString();</span>
+  }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.8.202204050719</span></div></body></html>

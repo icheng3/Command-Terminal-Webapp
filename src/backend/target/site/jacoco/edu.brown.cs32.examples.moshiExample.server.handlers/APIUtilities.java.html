@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>APIUtilities.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">moshi</a> &gt; <a href="index.source.html" class="el_package">edu.brown.cs32.examples.moshiExample.server.handlers</a> &gt; <span class="el_source">APIUtilities.java</span></div><h1>APIUtilities.java</h1><pre class="source lang-java linenums">package edu.brown.cs32.examples.moshiExample.server.handlers;
+
+import java.io.IOException;
+import java.net.HttpURLConnection;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.net.URL;
+import java.net.http.HttpClient;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
+import java.net.http.HttpResponse.BodyHandlers;
+
+/**
+ * Class that establishes a connection between the server and a URL endpoint.
+ */
+<span class="nc" id="L16">public class APIUtilities {</span>
+
+  /**
+   * Establishes the server's connection with a provided URL endpoint and
+   * returns the contents of the endpoint.
+   * @param url - the URL to establish a connection with
+   * @return - the contents of the enpoint
+   * @throws IOException when a connection is unable to be established with the API
+   * @throws InterruptedException when the connection to the API is interrupted
+   * @throws URISyntaxException when the GET request to the API is ill-formatted
+   */
+  public static HttpResponse&lt;String&gt; getURLResponse(String url)
+      throws IOException, URISyntaxException, InterruptedException {
+<span class="fc" id="L29">    URL requestURL = new URL(url);</span>
+<span class="fc" id="L30">    HttpURLConnection clientConnection = (HttpURLConnection) requestURL.openConnection();</span>
+<span class="fc" id="L31">    clientConnection.connect();</span>
+<span class="fc" id="L32">    HttpRequest httpRequest = HttpRequest.newBuilder().uri(new URI(url)).GET().build();</span>
+    HttpResponse&lt;String&gt; endPoint =
+<span class="fc" id="L34">        HttpClient.newBuilder().build().send(httpRequest, BodyHandlers.ofString());</span>
+<span class="fc" id="L35">    clientConnection.disconnect();</span>
+<span class="fc" id="L36">    return endPoint;</span>
+  }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.8.202204050719</span></div></body></html>

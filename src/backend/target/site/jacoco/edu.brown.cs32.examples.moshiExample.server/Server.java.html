@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>Server.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">moshi</a> &gt; <a href="index.source.html" class="el_package">edu.brown.cs32.examples.moshiExample.server</a> &gt; <span class="el_source">Server.java</span></div><h1>Server.java</h1><pre class="source lang-java linenums">package edu.brown.cs32.examples.moshiExample.server;
+
+import static spark.Spark.after;
+
+import edu.brown.cs32.examples.moshiExample.server.handlers.WeatherHandler;
+import edu.brown.cs32.examples.moshiExample.server.handlers.getCSVHandler;
+import edu.brown.cs32.examples.moshiExample.server.handlers.loadCSVHandler;
+import java.util.HashMap;
+import spark.Spark;
+
+/**
+ * Top-level class for this demo. Contains the main() method which starts Spark and runs the various
+ * handlers.
+ *
+ * &lt;p&gt;We have three endpoints in this demo: loadcsv, getcsv, and weather. Requests to loadcsv loads
+ * a CSV file if one is located at the specified path, provided by the query parameter 'filepath.'
+ * Requests to getcsv sends back the previously loaded CSV file's contents as a Json 2-dimensional
+ * array. loadcsv and getcsv share a state, specifically a HashMap that maps the filepath to the
+ * parsed data of its corresponding CSV file's contents. Requests to weather sends back the
+ * temperature at the specified location provided by its query parameters 'lat' and 'lon'
+ * corresponding to latitude and longitude, respectively.
+ */
+<span class="nc" id="L23">public class Server {</span>
+  public static void main(String[] args) {
+<span class="nc" id="L25">    HashMap&lt;String, Object&gt; filepaths = new HashMap&lt;&gt;();</span>
+<span class="nc" id="L26">    Spark.port(3000);</span>
+
+<span class="nc" id="L28">    after(</span>
+        (request, response) -&gt; {
+<span class="nc" id="L30">          response.header(&quot;Access-Control-Allow-Origin&quot;, &quot;*&quot;);</span>
+<span class="nc" id="L31">          response.header(&quot;Access-Control-Allow-Methods&quot;, &quot;*&quot;);</span>
+<span class="nc" id="L32">        });</span>
+
+    // Setting up the handler for the loadcsv endpoint
+<span class="nc" id="L35">    Spark.get(&quot;loadcsv&quot;, new loadCSVHandler(filepaths));</span>
+
+    // Setting up the handler for the getcsv endpoint
+<span class="nc" id="L38">    Spark.get(&quot;getcsv&quot;, new getCSVHandler(filepaths));</span>
+
+    // Setting up handler for the weather endpoint
+<span class="nc" id="L41">    Spark.get(&quot;weather&quot;, new WeatherHandler());</span>
+
+<span class="nc" id="L43">    System.out.println(&quot;Server started.&quot;);</span>
+
+<span class="nc" id="L45">    Spark.init();</span>
+<span class="nc" id="L46">    Spark.awaitInitialization();</span>
+<span class="nc" id="L47">  }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.8.202204050719</span></div></body></html>

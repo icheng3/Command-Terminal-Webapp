@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>Carrots.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">moshi</a> &gt; <a href="index.source.html" class="el_package">edu.brown.cs32.examples.moshiExample.ingredients</a> &gt; <span class="el_source">Carrots.java</span></div><h1>Carrots.java</h1><pre class="source lang-java linenums">package edu.brown.cs32.examples.moshiExample.ingredients;
+
+import edu.brown.cs32.examples.moshiExample.soup.ActualFlavorException;
+import edu.brown.cs32.examples.moshiExample.soup.Soup;
+
+/**
+ * A carrot ingredient, meant to be created when deserializing a JSON recipe.
+ *
+ * &lt;p&gt;Using records where possible, because they provide a nice auto-definition of equals, toString,
+ * etc. They are also immutable. Since they are classes, they can implement interfaces. But, since
+ * they are classes that extend Record, they cannot extend other classes (since Java has no multiple
+ * inheritance).
+ *
+ * &lt;p&gt;chop: what shape are the carrots being added in? amount: how much of this pepper is being
+ * added? (See comment below)
+ */
+<span class="fc" id="L17">public record Carrots(CarrotChopType chop, double amount) implements Ingredient {</span>
+
+<span class="fc" id="L19">  public enum CarrotChopType {</span>
+<span class="fc" id="L20">    SHREDDED,</span>
+<span class="fc" id="L21">    MATCHSTICK,</span>
+<span class="fc" id="L22">    UNCHOPPED</span>
+  }
+
+  // Note: the idea of &quot;amounts&quot; is oversimplified here. In reality, we'd want to know what the
+  // units were.
+  // But even more, in real cooking, we often have to deal with measurement by weight vs.
+  // measurement by volume.
+
+  @Override
+  public void add(Soup soup) throws ActualFlavorException {
+    // Carrots are always OK.
+<span class="fc" id="L33">    soup.stirIn(this);</span>
+<span class="fc" id="L34">  }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.8.202204050719</span></div></body></html>

@@ -1,0 +1,99 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>loadCSVHandler.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">moshi</a> &gt; <a href="index.source.html" class="el_package">edu.brown.cs32.examples.moshiExample.server.handlers</a> &gt; <span class="el_source">loadCSVHandler.java</span></div><h1>loadCSVHandler.java</h1><pre class="source lang-java linenums">package edu.brown.cs32.examples.moshiExample.server.handlers;
+
+import edu.brown.cs32.examples.moshiExample.csv.CsvParser;
+import edu.brown.cs32.examples.moshiExample.csv.FactoryFailureException;
+import edu.brown.cs32.examples.moshiExample.csv.attachments.CSVStringParser;
+import java.io.FileReader;
+import java.io.IOException;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import spark.QueryParamsMap;
+import spark.Request;
+import spark.Response;
+
+/**
+ * Handler class for the csv loading API endpoint.
+ *
+ * &lt;p&gt;This endpoint takes a basic GET request with no Json body, and returns a Json object in reply
+ * denoting if the CSV file at the inputted filepath is successfully loaded and its contents parsed.
+ */
+public class loadCSVHandler implements DataHandler {
+  private final HashMap&lt;String, Object&gt; filepaths;
+
+  /**
+   * Constructor accepts a state shared with the Handler class for the getcsv API endpoint.
+   *
+   * @param filepaths the shared state; a HashMap mapping a CSV filepath to the parsed data
+   */
+<span class="fc" id="L30">  public loadCSVHandler(HashMap&lt;String, Object&gt; filepaths) {</span>
+<span class="fc" id="L31">    this.filepaths = filepaths;</span>
+<span class="fc" id="L32">  }</span>
+
+  /**
+   * Getter method for the shared state filepaths that creates a defensive copy.
+   *
+   * @return a defensive copy of the shared state
+   */
+  public HashMap&lt;String, Object&gt; getFilepaths() {
+<span class="nc" id="L40">    return new HashMap&lt;&gt;(filepaths);</span>
+  }
+
+  /**
+   * Handles the request to load a csv file.
+   *
+   * @param request the request to handle
+   * @param response use to modify properties of the response
+   * @return response content
+   */
+  @Override
+  public Object handle(Request request, Response response) {
+<span class="fc" id="L52">    QueryParamsMap queryMap = request.queryMap();</span>
+<span class="fc bfc" id="L53" title="All 2 branches covered.">    if (!(queryMap.hasKey(&quot;filepath&quot;))) {</span>
+<span class="fc" id="L54">      Map&lt;String, Object&gt; results = new LinkedHashMap&lt;&gt;();</span>
+<span class="fc" id="L55">      results.put(&quot;result&quot;, &quot;error_bad_request&quot;);</span>
+<span class="fc" id="L56">      return new ResponseUtilities().serialize(results);</span>
+    } else {
+<span class="fc" id="L58">      return this.handleData(queryMap);</span>
+    }
+  }
+
+  /**
+   * Retrieve a CSV file and parse its contents. Assign the parsed contents as the value of the file
+   * path key in the shared state.
+   *
+   * @param queryMap - the hashmap containing the filepath query and its inputted parameters.
+   * @return a success response if the csv file is successfully loaded, an error response if not.
+   * @throws IOException if a file path is provided, but no file is found in the specified path
+   * @throws FactoryFailureException when a Factory class fails
+   */
+  public String handleData(QueryParamsMap queryMap) {
+    try {
+<span class="fc" id="L73">      String currentFilepath = queryMap.get(&quot;filepath&quot;).value();</span>
+      // only allows access to a specific folder
+<span class="fc" id="L75">      String openFolder = &quot;src/main/java/edu/brown/cs32/examples/moshiExample/testCSV/&quot;;</span>
+<span class="fc bfc" id="L76" title="All 2 branches covered.">      if (currentFilepath.contains(openFolder)) {</span>
+<span class="fc" id="L77">        CsvParser&lt;List&lt;String&gt;&gt; parser =</span>
+            new CsvParser&lt;&gt;(new FileReader(currentFilepath), new CSVStringParser(), false);
+<span class="fc" id="L79">        this.filepaths.put(&quot;currentFilePath&quot;, parser.parse());</span>
+<span class="fc" id="L80">        Map&lt;String, Object&gt; results = new LinkedHashMap&lt;&gt;();</span>
+<span class="fc" id="L81">        results.put(&quot;result&quot;, &quot;success&quot;);</span>
+<span class="fc" id="L82">        results.put(&quot;filepath&quot;, currentFilepath);</span>
+<span class="fc" id="L83">        return new ResponseUtilities().serialize(results);</span>
+      } else {
+<span class="fc" id="L85">        Map&lt;String, Object&gt; results = new LinkedHashMap&lt;&gt;();</span>
+<span class="fc" id="L86">        results.put(&quot;result&quot;, &quot;error_datasource&quot;);</span>
+<span class="fc" id="L87">        results.put(&quot;filepath&quot;, currentFilepath);</span>
+<span class="fc" id="L88">        return new ResponseUtilities().serialize(results);</span>
+      }
+<span class="nc" id="L90">    } catch (IOException | FactoryFailureException e) {</span>
+<span class="nc" id="L91">      String currentFilepath = queryMap.get(&quot;filepath&quot;).value();</span>
+<span class="nc" id="L92">      Map&lt;String, Object&gt; results = new LinkedHashMap&lt;&gt;();</span>
+<span class="nc" id="L93">      results.put(&quot;result&quot;, &quot;error_datasource&quot;);</span>
+<span class="nc" id="L94">      results.put(&quot;filepath&quot;, currentFilepath);</span>
+<span class="nc" id="L95">      return new ResponseUtilities().serialize(results);</span>
+    }
+  }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.8.202204050719</span></div></body></html>

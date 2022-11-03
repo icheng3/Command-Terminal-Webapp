@@ -1,0 +1,13 @@
+package edu.brown.cs32.examples.moshiExample.csv.attachments;
+
+import edu.brown.cs32.examples.moshiExample.csv.FactoryFailureException;
+import java.util.List;
+
+/**
+ * Creates an object of type T from a List of Strings.
+ *
+ * @param <T> object to be created
+ */
+public interface CreatorFromRow<T> {
+  T create(List<String> row) throws FactoryFailureException;
+}

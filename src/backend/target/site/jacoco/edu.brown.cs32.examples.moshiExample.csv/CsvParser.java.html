@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>CsvParser.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">moshi</a> &gt; <a href="index.source.html" class="el_package">edu.brown.cs32.examples.moshiExample.csv</a> &gt; <span class="el_source">CsvParser.java</span></div><h1>CsvParser.java</h1><pre class="source lang-java linenums">package edu.brown.cs32.examples.moshiExample.csv;
+
+import edu.brown.cs32.examples.moshiExample.csv.attachments.CreatorFromRow;
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.Reader;
+import java.util.ArrayList;
+import java.util.List;
+
+/**
+ * CSV parser that takes in a CSV reader of any type and a boolean specifying is.excludeHeader is
+ * present and returns a list of specified objects as specified by parser object input.
+ *
+ * @author - solaiya
+ * @version - 1
+ * @param &lt;T&gt; Object type that the parser is specialized for
+ */
+public class CsvParser&lt;T&gt; {
+
+  private Reader data;
+  private CreatorFromRow&lt;T&gt; rowParser;
+  private boolean excludeHeader;
+
+  /**
+   * Creates a CSV Parser that is generic in that it can parse a CSV into a list of generic object.
+   *
+   * @param data - reader object that reads the file data
+   * @param rowParser - object specific parser that specifies and creates the object type of list
+   * @param excludeHeader - specifies whether reader should excluds.excludeHeader of not
+   */
+<span class="fc" id="L31">  public CsvParser(Reader data, CreatorFromRow&lt;T&gt; rowParser, boolean excludeHeader) {</span>
+<span class="fc" id="L32">    this.data = data;</span>
+<span class="fc" id="L33">    this.rowParser = rowParser;</span>
+<span class="fc" id="L34">    this.excludeHeader = excludeHeader;</span>
+<span class="fc" id="L35">  }</span>
+
+  /**
+   * Parser method that reads in a reader object and returns list of objects that are of interest to
+   * be extracted from csv.
+   *
+   * @return a list of parsed objects from a csv according to the row parser create function
+   * @throws IOException - a file not found exception
+   * @throws FactoryFailureException - if object cannot be created with create method
+   */
+  public List&lt;T&gt; parse() throws IOException, FactoryFailureException {
+<span class="fc" id="L46">    List&lt;List&lt;String&gt;&gt; allRows = new ArrayList&lt;&gt;();</span>
+<span class="fc" id="L47">    int readCount = 0;</span>
+    // wrap in buffered reader
+<span class="fc" id="L49">    BufferedReader bufferedReader = new BufferedReader(this.data);</span>
+<span class="fc" id="L50">    String line = bufferedReader.readLine();</span>
+<span class="fc" id="L51">    String delimiter = &quot;,&quot;;</span>
+    // if excludeHeader is true, skip the first line of the csv
+<span class="pc bpc" id="L53" title="1 of 2 branches missed.">    if (!this.excludeHeader) {</span>
+<span class="fc" id="L54">      readCount = 1;</span>
+    }
+<span class="fc bfc" id="L56" title="All 2 branches covered.">    while (line != null) {</span>
+<span class="pc bpc" id="L57" title="1 of 2 branches missed.">      if (readCount &gt; 0) { // if excludeHeader is true, readcount == 0 and first line is skipped</span>
+<span class="fc" id="L58">        List&lt;String&gt; row = List.of(line.split(delimiter));</span>
+<span class="fc" id="L59">        allRows.add(row);</span>
+      }
+<span class="fc" id="L61">      line = bufferedReader.readLine();</span>
+<span class="fc" id="L62">      readCount += 1;</span>
+    }
+
+<span class="fc" id="L65">    List&lt;T&gt; parsedRows = new ArrayList&lt;&gt;();</span>
+
+    // create a list of object of type T based on object specific row-parser
+<span class="fc bfc" id="L68" title="All 2 branches covered.">    for (List&lt;String&gt; r : allRows) {</span>
+      try {
+<span class="fc" id="L70">        T parsedRow = (T) this.rowParser.create(r);</span>
+<span class="fc" id="L71">        parsedRows.add(parsedRow);</span>
+<span class="nc" id="L72">      } catch (FactoryFailureException f) {</span>
+<span class="nc" id="L73">        throw new FactoryFailureException(r); // throw exception if factory cannot create object</span>
+<span class="fc" id="L74">      }</span>
+<span class="fc" id="L75">    }</span>
+<span class="fc" id="L76">    return parsedRows;</span>
+  }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.8.202204050719</span></div></body></html>

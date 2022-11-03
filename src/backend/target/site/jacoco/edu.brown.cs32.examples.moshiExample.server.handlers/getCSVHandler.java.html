@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>getCSVHandler.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">moshi</a> &gt; <a href="index.source.html" class="el_package">edu.brown.cs32.examples.moshiExample.server.handlers</a> &gt; <span class="el_source">getCSVHandler.java</span></div><h1>getCSVHandler.java</h1><pre class="source lang-java linenums">package edu.brown.cs32.examples.moshiExample.server.handlers;
+
+import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.Map;
+import spark.QueryParamsMap;
+import spark.Request;
+import spark.Response;
+
+/**
+ * Handler class for the getcsv API endpoint.
+ *
+ * &lt;p&gt;This endpoint takes a basic GET request with no Json body, and returns a Json object in reply
+ * denoting if a CSV file's contents are retrieved and the CSV file contents themselves if
+ * applicable.
+ */
+public class getCSVHandler implements DataHandler {
+
+  /**
+   * Shared state that maps a CSV filepath to its parsed data.
+   */
+  private final HashMap&lt;String, Object&gt; filepaths;
+
+  /**
+   * Constructor accepts a state shared with the Handler class for the loadcsv API endpoint.
+   *
+   * @param filepaths the shared state; a HashMap mapping a CSV filepath to the parsed data
+   */
+<span class="fc" id="L29">  public getCSVHandler(HashMap&lt;String, Object&gt; filepaths) {</span>
+<span class="fc" id="L30">    this.filepaths = filepaths; // defensive copy</span>
+<span class="fc" id="L31">  }</span>
+
+  /**
+   * Getter method for the shared state filepaths that creates a defensive copy.
+   *
+   * @return a defensive copy of the shared state
+   */
+  public HashMap&lt;String, Object&gt; getFilepaths() {
+<span class="nc" id="L39">    return new HashMap&lt;&gt;(filepaths);</span>
+  }
+
+  /**
+   * Handles the request to retrieve a previously loaded csv.
+   *
+   * @param request the request to handle
+   * @param response use to modify properties of the response
+   * @return the CSV file contents if the shared state contains the necessary key, an error response
+   * otherwise
+   */
+  @Override
+  public Object handle(Request request, Response response) {
+<span class="fc" id="L52">    QueryParamsMap queryMap = request.queryMap();</span>
+<span class="fc bfc" id="L53" title="All 2 branches covered.">    if (!(this.filepaths.containsKey(&quot;currentFilePath&quot;))) {</span>
+<span class="fc" id="L54">      Map&lt;String, Object&gt; results = new LinkedHashMap&lt;&gt;();</span>
+<span class="fc" id="L55">      results.put(&quot;result&quot;, &quot;error_datasource&quot;);</span>
+<span class="fc" id="L56">      return new ResponseUtilities().serialize(results);</span>
+    } else {
+<span class="fc" id="L58">      return this.handleData(queryMap);</span>
+    }
+  }
+
+  /**
+   * If previously loaded by entering a valid request to the loadcsv endpoint, the parsed contents
+   * of the CSV are returned as a 2D Json array.
+   * @param queryMap - the hashmap containing the filepath query and its inputted parameter.
+   * @return the CSV file contents if the shared state contains the necessary key, an error response
+   * otherwise
+   */
+  public String handleData(QueryParamsMap queryMap) {
+<span class="fc" id="L70">    Object parsedData = this.filepaths.get(&quot;currentFilePath&quot;);</span>
+<span class="fc" id="L71">    Map&lt;String, Object&gt; results = new LinkedHashMap&lt;&gt;();</span>
+<span class="fc" id="L72">    results.put(&quot;result&quot;, &quot;success&quot;);</span>
+<span class="fc" id="L73">    results.put(&quot;data&quot;, parsedData);</span>
+<span class="fc" id="L74">    return new ResponseUtilities().serialize(results);</span>
+  }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.8.202204050719</span></div></body></html>
